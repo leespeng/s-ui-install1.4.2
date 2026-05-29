@@ -62,8 +62,12 @@ PASS=$(gen_rand8)
 # 9. 写入 s-ui 管理员账号
 "${INSTALL_DIR}/sui" admin -username "$USER" -password "$PASS"
 
-# 10. 获取本机 IP（优先公网/网卡主IP）
-IP=$(hostname -I | awk '{print $1}')
+# 10. 获取公网 IP（优先公网，失败则用内网IP）
+echo "🌐 正在获取公网 IP..."
+if ! IP=$(curl -s --max-time 5 ifconfig.me); then
+    echo "⚠️  公网IP获取失败，使用本机IP..."
+    IP=$(hostname -I | awk '{print $1}')
+fi
 
 # 11. 蓝色 + 分行输出（你要的格式）
 echo "=================================================="
