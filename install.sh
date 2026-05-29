@@ -8,9 +8,9 @@ DB_DIR="${INSTALL_DIR}/db"
 SERVICE_FILE="/etc/systemd/system/s-ui.service"
 # -------------------------------------------------------------
 
-# 颜色定义 蓝色
+# 颜色定义：蓝色
 BLUE='\033[0;34m'
-NC='\033[0m' # 恢复默认颜色
+NC='\033[0m'
 
 # 必须 root
 if [[ $EUID -ne 0 ]]; then
@@ -34,7 +34,7 @@ wget -O /tmp/s-ui/s-ui.tar.gz "$BIN_URL"
 echo "📂 解压 ..."
 tar -zxvf /tmp/s-ui/s-ui.tar.gz -C /
 
-# 4. 清空旧数据库，保证纯净全新
+# 4. 清空旧数据库（全新纯净）
 echo "🧹 清空旧数据库，确保全新面板 ..."
 rm -f "${DB_DIR}/s-ui.db"
 
@@ -52,15 +52,20 @@ echo "🆕 启动服务，初始化数据库 ..."
 systemctl start s-ui
 sleep 3
 
-# 8. 生成随机账号密码
-USER="admin"
-PASS=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
+# 8. 生成随机 8位 用户名 + 密码（字母数字混合）
+gen_rand8() {
+  cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1
+}
+USER=$(gen_rand8)
+PASS=$(gen_rand8)
+
+# 9. 写入 s-ui 管理员账号
 "${INSTALL_DIR}/sui" admin -username "$USER" -password "$PASS"
 
-# 9. 获取本机IP
+# 10. 获取本机 IP（优先公网/网卡主IP）
 IP=$(hostname -I | awk '{print $1}')
 
-# 10. 分行 + 蓝色字体输出（你要的格式）
+# 11. 蓝色 + 分行输出（你要的格式）
 echo "=================================================="
 echo -e "${BLUE}Global Address: http://${IP}:2095/app/${NC}"
 echo -e "${BLUE}用户名: ${USER}${NC}"
