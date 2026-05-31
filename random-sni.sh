@@ -16,9 +16,9 @@ DOMAINS=(
 "stackoverflow.com" "www.gitlab.com" "www.npmjs.com" "www.docker.com" "www.kubernetes.io"
 "www.nginx.com" "www.apache.org" "www.amazon.com" "www.ebay.com" "www.netflix.com"
 "www.nvidia.com" "www.openai.com" "www.cisco.com" "www.oracle.com" "www.ibm.com"
-"www.samsung.com" "www.sony.com" "www.intel.com" "www.amd.com" "www.asus.com"
-"www.msi.com" "www.gigabyte.com" "www.dell.com" "www.hp.com" "www.lg.com"
-"www.panasonic.com" "www.toshiba.com" "www.philips.com" "www.hisense.com" "www.tcl.com"
+"samsung.com" "sony.com" "intel.com" "amd.com" "asus.com"
+"msi.com" "gigabyte.com" "dell.com" "hp.com" "lg.com"
+"panasonic.com" "toshiba.com" "philips.com" "hisense.com" "tcl.com"
 )
 
 CACHE_FILE="$HOME/.sni_cache"
@@ -63,15 +63,15 @@ while true; do
             delay_ms_int=$(echo "$delay" | awk '{printf "%.0f", $1 * 1000}')
 
             if (( delay_ms_int < 50 )); then
-                color="\033[32m"       # 绿色（<50ms）
-            elif (( delay_ms_int <= 100 )); then
-                color="\033[34m"       # 蓝色（51-100ms）
+                color="\033[32m"       # 绿色
+            elif (( delay_ms_int <= 150 )); then
+                color="\033[34m"       # 蓝色
             elif (( delay_ms_int <= 250 )); then
-                color="\033[33m"       # 黄色（101-250ms）
+                color="\033[0m"        # 白色
             elif (( delay_ms_int <= 500 )); then
-                color="\033[35m"       # 洋红色（251-500ms）
+                color="\033[33m"       # 黄色
             else
-                color="\033[31m"       # 红色（>500ms/失败）
+                color="\033[31m"       # 红色
             fi
 
             printf "${color}%-32s : %4d ms\033[0m\n" "$domain" "$delay_ms_int"
@@ -82,7 +82,7 @@ while true; do
 
     echo -e "\n----------------------------------------"
     echo -e "📊 剩余可用：${#AVAILABLE[@]} | 已用：${#USED[@]}"
-    echo -e "💡 绿<50 | 蓝51-100 | 黄101-250 | 洋红251-500 | 红>500/失败"
+    echo -e "💡 绿<50 | 蓝51-150 | 白151-250 | 黄251-500 | 红>500"
 
     read -p $'\n🔁 回车重抽 | 输入 q 退出：' key
     [[ $key == "q" ]] && echo -e "\n👋 已退出" && exit 0
