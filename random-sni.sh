@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 域名池（100个，含AMD、家电等）
+# 域名池（100个）
 DOMAINS=(
 "www.baidu.com" "www.qq.com" "www.taobao.com" "www.jd.com" "www.sina.com"
 "www.weibo.com" "www.163.com" "www.sohu.com" "www.360.cn" "www.alipay.com"
@@ -65,30 +65,23 @@ while true; do
     echo -e "🔍 正在为您检测这10个域名的延迟..."
     echo "----------------------------------------"
 
-    # 这里改用临时文件存结果，避免数组解析问题
-    tmpfile=$(mktemp)
+    # 先输出所有域名的延迟，不排序，也不用数组/临时文件
+    echo -e "\n✅ 本次10个域名延迟测试结果："
     for domain in "${SELECTED[@]}"; do
         delay=$(curl -o /dev/null -s -w "%{time_connect}\n" "https://$domain:443" 2>/dev/null)
         if [[ $? -eq 0 && -n "$delay" ]]; then
             delay_ms=$(echo "$delay * 1000" | bc | awk '{printf "%.0f", $0}')
-            echo "$delay_ms $domain" >> "$tmpfile"
+            if (( delay_ms < 100 )); then
+                echo -e "\033[32m$domain : $delay_ms ms\033[0m"
+            elif (( delay_ms < 500 )); then
+                echo -e "\033[33m$domain : $delay_ms ms\033[0m"
+            else
+                echo -e "\033[31m$domain : $delay_ms ms\033[0m"
+            fi
         else
-            echo "9999 $domain" >> "$tmpfile"
+            echo -e "\033[31m$domain : 9999 ms\033[0m"
         fi
     done
-
-    # 直接用 sort 命令排序，再逐行读取，避免数组问题
-    echo -e "\n✅ 本次10个域名延迟测试结果（已按延迟排序）："
-    while read -r ms domain; do
-        if (( ms < 100 )); then
-            echo -e "\033[32m$domain : $ms ms\033[0m"
-        elif (( ms < 500 )); then
-            echo -e "\033[33m$domain : $ms ms\033[0m"
-        else
-            echo -e "\033[31m$domain : $ms ms\033[0m"
-        fi
-    done < <(sort -n "$tmpfile")
-    rm -f "$tmpfile"
 
     echo -e "\n📊 剩余可用：${#AVAILABLE[@]} 个 | 已用：${#USED[@]}"
     echo -e "💡 绿色=延迟低（推荐） 黄色=延迟中等 红色=延迟高/失败"
