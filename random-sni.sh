@@ -69,9 +69,9 @@ while true; do
             elif (( delay_ms_int <= 250 )); then
                 color="\033[33m"       # 黄色（101-250ms）
             elif (( delay_ms_int <= 500 )); then
-                color="\033[1;33m"     # 亮黄色（251-500ms，模拟橘黄）
+                color="\033[35m"       # 洋红色（251-500ms）
             else
-                color="\033[31m"       # 红色（>500ms）
+                color="\033[31m"       # 红色（>500ms/失败）
             fi
 
             printf "${color}%-32s : %4d ms\033[0m\n" "$domain" "$delay_ms_int"
@@ -82,7 +82,7 @@ while true; do
 
     echo -e "\n----------------------------------------"
     echo -e "📊 剩余可用：${#AVAILABLE[@]} | 已用：${#USED[@]}"
-    echo -e "💡 绿<50 | 蓝51-100 | 黄101-250 | 亮黄251-500 | 红>500/失败"
+    echo -e "💡 绿<50 | 蓝51-100 | 黄101-250 | 洋红251-500 | 红>500/失败"
 
     read -p $'\n🔁 回车重抽 | 输入 q 退出：' key
     [[ $key == "q" ]] && echo -e "\n👋 已退出" && exit 0
