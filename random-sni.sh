@@ -1,32 +1,45 @@
 #!/bin/bash
 
+# 你指定的纯净域名 无国内 无重复 一行多个
 DOMAINS=(
-"www.baidu.com" "www.qq.com" "www.taobao.com" "www.jd.com" "www.sina.com"
-"www.weibo.com" "www.163.com" "www.sohu.com" "www.360.cn" "www.alipay.com"
-"www.tencent.com" "www.bytedance.com" "www.douyin.com" "www.huawei.com" "www.lenovo.com"
-"www.midea.com" "www.gree.com" "www.xiaomi.com" "www.cloudflare.com" "crypto.cloudflare.com"
-"speed.cloudflare.com" "cloudflare.com" "www.cloudflare.net" "cdn.cloudflare.net" "www.reddit.com"
-"www.wikipedia.org" "www.apple.com" "apple.com" "www.microsoft.com" "microsoft.com"
-"www.bing.com" "www.google.com" "www.youtube.com" "github.com" "www.github.com"
-"www.stackoverflow.com" "www.nginx.com" "www.apache.org" "www.amazon.com"
+"www.microsoft.com" "www.bing.com" "www.yahoo.com" "www.apple.com" "cdn.apple.com"
+"init.itunes.apple.com" "books.apple.com" "apps.mzstatic.com" "www.nvidia.com" "investor.nvidia.com"
+"www.intel.com" "www.amd.com" "www.ibm.com" "www.oracle.com" "www.sap.com"
+"www.adobe.com" "www.canon.com" "www.sony.com" "www.panasonic.com" "www.philips.com"
+"www.bosch.com" "www.siemens.com" "www.hp.com" "www.dell.com" "www.lenovo.com"
+"www.asus.com" "www.acer.com" "www.toshiba.com" "www.sharp-world.com" "www.cisco.com"
+"www.ubuntu.com" "www.debian.org" "www.archlinux.org" "www.fedoraproject.org" "www.kali.org"
+"www.python.org" "www.perl.org" "www.php.net" "nodejs.org" "www.eclipse.org"
+"www.apache.org" "www.mozilla.org" "addons.mozilla.org" "support.mozilla.org" "www.wikipedia.org"
+"en.wikipedia.org" "commons.wikimedia.org" "www.redhat.com" "access.redhat.com" "www.cloudflare.com"
+"blog.cloudflare.com" "www.akamai.com" "www.fastly.com" "www.linkedin.com" "www.twitter.com"
+"www.facebook.com" "about.fb.com" "www.instagram.com" "www.whatsapp.com" "web.whatsapp.com"
+"www.tiktok.com" "www.snapchat.com" "www.pinterest.com" "www.reddit.com" "old.reddit.com"
+"www.quora.com" "www.medium.com" "www.github.com" "docs.github.com" "api.github.com"
+"www.stackoverflow.com" "www.nytimes.com" "www.washingtonpost.com" "www.bbc.com" "www.theguardian.com"
+"www.reuters.com" "www.bloomberg.com" "www.forbes.com" "www.cnn.com" "www.aljazeera.com"
+"www.economist.com" "www.ft.com" "www.wsj.com" "www.usatoday.com" "www.huffpost.com"
+"www.nationalgeographic.com" "www.discovery.com" "www.imdb.com" "www.rottentomatoes.com" "www.spotify.com"
+"open.spotify.com" "www.netflix.com" "www.paypal.com" "www.ebay.com" "www.shopify.com"
+"www.salesforce.com" "www.dropbox.com" "www.box.com" "drive.google.com" "docs.google.com"
+"www.amazon.com" "smile.amazon.com" "aws.amazon.com" "portal.azure.com" "www.digitalocean.com"
+"www.heroku.com" "www.wordpress.com" "www.wix.com" "www.weebly.com" "www.cloudfront.net"
+"d1nflstz14dl9t.cloudfront.net"
 )
 
-# 临时记录已用过的域名，用完自动重置
 USED=()
 
-echo -e "\n🎲 SNI 延迟测试（和以前一样，回车再测一组，q退出）"
+echo -e "\n🎲 SNI 延迟测试（纯净域名｜回车继续｜q退出）"
 echo -e "💡 绿<50 | 蓝51-150 | 白151-250 | 黄251-500 | 红>500/失败\n"
 
 while true; do
-    # 构建可用域名列表
     AVAILABLE=()
     for d in "${DOMAINS[@]}"; do
         [[ ! " ${USED[@]} " =~ " $d " ]] && AVAILABLE+=("$d")
     done
 
-    # 域名用完自动重置
     if [[ ${#AVAILABLE[@]} -eq 0 ]]; then
-        echo -e "\n⚠️ 所有域名已测试完毕，自动重置，继续测试..."
+        echo -e "\n⚠️ 全部测完，自动重置"
         USED=()
         AVAILABLE=("${DOMAINS[@]}")
         read -p "回车继续："
@@ -38,9 +51,8 @@ while true; do
     echo "正在检测 Reality 伪装网站延迟..."
     echo "----------------------------------------"
 
-    # 随机选10个可用域名
     for ((i=0; i<10; i++)); do
-        if [[ ${#AVAILABLE[@]} -eq 0 ]]; then break; fi
+        [[ ${#AVAILABLE[@]} -eq 0 ]] && break
         idx=$((RANDOM % ${#AVAILABLE[@]}))
         domain=${AVAILABLE[$idx]}
 
