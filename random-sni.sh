@@ -62,19 +62,16 @@ while true; do
         if [[ $? -eq 0 && -n "$delay" ]]; then
             delay_ms_int=$(echo "$delay" | awk '{printf "%.0f", $1 * 1000}')
 
-            # ✅ 16色终极稳定版（所有终端 100% 显示）
-            if (( delay_ms_int < 20 )); then
-                color="\033[32m"       # 深绿
-            elif (( delay_ms_int <= 50 )); then
-                color="\033[1;32m"     # 绿色
+            if (( delay_ms_int < 50 )); then
+                color="\033[32m"       # 绿色（<50ms）
             elif (( delay_ms_int <= 100 )); then
-                color="\033[92m"       # 浅绿色（亮绿）
+                color="\033[34m"       # 蓝色（51-100ms）
             elif (( delay_ms_int <= 250 )); then
-                color="\033[33m"       # 黄色
+                color="\033[33m"       # 黄色（101-250ms）
             elif (( delay_ms_int <= 500 )); then
-                color="\033[91m"       # 橙色（亮红）
+                color="\033[1;33m"     # 亮黄色（251-500ms，模拟橘黄）
             else
-                color="\033[31m"       # 红色
+                color="\033[31m"       # 红色（>500ms）
             fi
 
             printf "${color}%-32s : %4d ms\033[0m\n" "$domain" "$delay_ms_int"
@@ -85,7 +82,7 @@ while true; do
 
     echo -e "\n----------------------------------------"
     echo -e "📊 剩余可用：${#AVAILABLE[@]} | 已用：${#USED[@]}"
-    echo -e "💡 深绿<20 | 绿21-50 | 浅绿51-100 | 黄101-250 | 橙251-500 | 红>500"
+    echo -e "💡 绿<50 | 蓝51-100 | 黄101-250 | 亮黄251-500 | 红>500/失败"
 
     read -p $'\n🔁 回车重抽 | 输入 q 退出：' key
     [[ $key == "q" ]] && echo -e "\n👋 已退出" && exit 0
