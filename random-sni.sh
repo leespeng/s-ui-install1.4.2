@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# 域名池（100个）
 DOMAINS=(
 "www.baidu.com" "www.qq.com" "www.taobao.com" "www.jd.com" "www.sina.com"
 "www.weibo.com" "www.163.com" "www.sohu.com" "www.360.cn" "www.alipay.com"
@@ -35,7 +34,7 @@ while true; do
     done
 
     if [[ ${#AVAILABLE[@]} -eq 0 ]]; then
-        echo -e "⚠️  所有域名已抽完，自动重置缓存！\n"
+        echo -e "⚠️ 所有域名已抽完，自动重置缓存！\n"
         > "$CACHE_FILE"
         USED=()
         AVAILABLE=("${DOMAINS[@]}")
@@ -55,38 +54,38 @@ while true; do
 
     printf "%s\n" "${USED[@]}" > "$CACHE_FILE"
 
-    echo -e "🔍 正在为您按顺序检测 s-ui/3x-ui Reality 伪装网站延迟..."
+    echo -e "🔍 正在检测 Reality 伪装网站延迟..."
     echo "----------------------------------------"
 
     for domain in "${SELECTED[@]}"; do
         delay=$(curl -o /dev/null -s -w "%{time_connect}\n" "https://$domain:443" 2>/dev/null)
         if [[ $? -eq 0 && -n "$delay" ]]; then
             delay_ms_int=$(echo "$delay" | awk '{printf "%.0f", $1 * 1000}')
-            delay_ms_str=$(echo "$delay" | awk '{printf "%.0f", $1 * 1000}')
 
+            # ✅ 16色终极稳定版（所有终端 100% 显示）
             if (( delay_ms_int < 20 )); then
-                color="\033[32m"       # 深绿色（<20ms）
+                color="\033[32m"       # 深绿
             elif (( delay_ms_int <= 50 )); then
-                color="\033[32;1m"     # 亮绿色（21-50ms）
+                color="\033[1;32m"     # 绿色
             elif (( delay_ms_int <= 100 )); then
-                color="\033[92m"       # 浅绿色（51-100ms）
+                color="\033[92m"       # 浅绿色（亮绿）
             elif (( delay_ms_int <= 250 )); then
-                color="\033[33m"       # 黄色（101-250ms）
+                color="\033[33m"       # 黄色
             elif (( delay_ms_int <= 500 )); then
-                color="\033[33;1m"     # 橘黄色（251-500ms）
+                color="\033[91m"       # 橙色（亮红）
             else
-                color="\033[31m"       # 红色（>500ms）
+                color="\033[31m"       # 红色
             fi
 
-            printf "${color}%-30s : %3s ms\033[0m\n" "$domain" "$delay_ms_str"
+            printf "${color}%-32s : %4d ms\033[0m\n" "$domain" "$delay_ms_int"
         else
-            printf "\033[31m%-30s : 9999 ms\033[0m\n" "$domain"
+            printf "\033[31m%-32s : 9999 ms\033[0m\n" "$domain"
         fi
     done
 
     echo -e "\n----------------------------------------"
     echo -e "📊 剩余可用：${#AVAILABLE[@]} | 已用：${#USED[@]}"
-    echo -e "💡 深绿<20ms | 亮绿21-50ms | 浅绿51-100ms | 黄101-250ms | 橘黄251-500ms | 红>500ms/失败"
+    echo -e "💡 深绿<20 | 绿21-50 | 浅绿51-100 | 黄101-250 | 橙251-500 | 红>500"
 
     read -p $'\n🔁 回车重抽 | 输入 q 退出：' key
     [[ $key == "q" ]] && echo -e "\n👋 已退出" && exit 0
