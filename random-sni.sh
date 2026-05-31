@@ -68,7 +68,7 @@ while true; do
     results=()
     for domain in "${SELECTED[@]}"; do
         delay=$(curl -o /dev/null -s -w "%{time_connect}\n" "https://$domain:443" 2>/dev/null)
-        if [[ $? -eq 0 ]]; then
+        if [[ $? -eq 0 && -n "$delay" ]]; then
             delay_ms=$(echo "$delay * 1000" | bc | awk '{printf "%.0f", $0}')
             results+=("$delay_ms $domain")
         else
@@ -83,9 +83,9 @@ while true; do
     for line in "${sorted[@]}"; do
         ms=$(echo "$line" | awk '{print $1}')
         domain=$(echo "$line" | awk '{print $2}')
-        if [[ $ms -lt 100 ]]; then
+        if (( ms < 100 )); then
             echo -e "\033[32m$domain : $ms ms\033[0m"
-        elif [[ $ms -lt 500 ]]; then
+        elif (( ms < 500 )); then
             echo -e "\033[33m$domain : $ms ms\033[0m"
         else
             echo -e "\033[31m$domain : $ms ms\033[0m"
