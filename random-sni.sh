@@ -25,7 +25,7 @@ DOMAINS=(
 CACHE_FILE="$HOME/.sni_cache"
 [[ -f "$CACHE_FILE" ]] || touch "$CACHE_FILE"
 
-echo -e "\n🎲 SNI 随机域名延迟测试器（回车=重抽 | 输入 q=退出）\n"
+echo -e "\n🎲 SNI 随机域名延迟测试器（回车=重抽 | 输入 q 回车=退出）\n"
 
 while true; do
     USED=($(cat "$CACHE_FILE"))
@@ -39,8 +39,8 @@ while true; do
         > "$CACHE_FILE"
         USED=()
         AVAILABLE=("${DOMAINS[@]}")
-        read -p "🔄 已重置，回车继续或输入 q 退出..." key
-        [[ $key == "q" ]] && echo "👋 退出" && exit 0
+        read -p "🔄 已重置，回车继续或输入 q 退出：" key
+        [[ $key == "q" ]] && echo -e "\n👋 已退出" && exit 0
         continue
     fi
 
@@ -61,13 +61,16 @@ while true; do
     for domain in "${SELECTED[@]}"; do
         delay=$(curl -o /dev/null -s -w "%{time_connect}\n" "https://$domain:443" 2>/dev/null)
         if [[ $? -eq 0 && -n "$delay" ]]; then
-            delay_ms=$(echo "$delay" | awk '{printf "%.2f", $1 * 1000}')
-            if (( $(echo "$delay_ms < 100" | bc -l) )); then
-                echo -e "\033[32m$domain : $delay_ms ms\033[0m"
-            elif (( $(echo "$delay_ms < 500" | bc -l) )); then
-                echo -e "\033[33m$domain : $delay_ms ms\033[0m"
+            # 用 awk 计算延迟（毫秒），取整数用于颜色判断，同时保留两位小数显示
+            delay_ms_int=$(echo "$delay" | awk '{printf "%.0f", $1 * 1000}')
+            delay_ms_str=$(echo "$delay" | awk '{printf "%.2f", $1 * 1000}')
+            
+            if (( delay_ms_int < 100 )); then
+                echo -e "\033[32m$domain : $delay_ms_str ms\033[0m"
+            elif (( delay_ms_int < 500 )); then
+                echo -e "\033[33m$domain : $delay_ms_str ms\033[0m"
             else
-                echo -e "\033[31m$domain : $delay_ms ms\033[0m"
+                echo -e "\033[31m$domain : $delay_ms_str ms\033[0m"
             fi
         else
             echo -e "\033[31m$domain : 9999.00 ms\033[0m"
@@ -75,9 +78,9 @@ while true; do
     done
 
     echo -e "\n📊 剩余可用：${#AVAILABLE[@]} | 已用：${#USED[@]}"
-    echo -e "💡 绿色=优 黄色=中 红色=差"
+    echo -e "💡 绿色=延迟优 黄色=延迟中 红色=延迟差/连接失败"
 
-    read -p $'\n🔁 回车重抽 | 输入 q 退出 → ' key
-    [[ $key == "q" ]] && echo -e "\n👋 退出" && exit 0
+    read -p $'\n🔁 回车重抽 | 输入 q 退出：' key
+    [[ $key == "q" ]] && echo -e "\n👋 已退出" && exit 0
     echo -e "\n----------------------------------------"
 done
