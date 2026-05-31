@@ -55,30 +55,38 @@ while true; do
 
     printf "%s\n" "${USED[@]}" > "$CACHE_FILE"
 
-    echo -e "🔍 正在检测延迟..."
+    echo -e "🔍 正在为您按顺序检测 s-ui/3x-ui Reality 伪装网站延迟..."
     echo "----------------------------------------"
 
     for domain in "${SELECTED[@]}"; do
         delay=$(curl -o /dev/null -s -w "%{time_connect}\n" "https://$domain:443" 2>/dev/null)
         if [[ $? -eq 0 && -n "$delay" ]]; then
-            # 用 awk 计算延迟（毫秒），取整数用于颜色判断，同时保留两位小数显示
             delay_ms_int=$(echo "$delay" | awk '{printf "%.0f", $1 * 1000}')
-            delay_ms_str=$(echo "$delay" | awk '{printf "%.2f", $1 * 1000}')
-            
-            if (( delay_ms_int < 100 )); then
-                echo -e "\033[32m$domain : $delay_ms_str ms\033[0m"
-            elif (( delay_ms_int < 500 )); then
-                echo -e "\033[33m$domain : $delay_ms_str ms\033[0m"
+            delay_ms_str=$(echo "$delay" | awk '{printf "%.0f", $1 * 1000}')
+
+            if (( delay_ms_int < 20 )); then
+                color="\033[32m"       # 深绿色（<20ms）
+            elif (( delay_ms_int <= 50 )); then
+                color="\033[32;1m"     # 亮绿色（21-50ms）
+            elif (( delay_ms_int <= 100 )); then
+                color="\033[92m"       # 浅绿色（51-100ms）
+            elif (( delay_ms_int <= 250 )); then
+                color="\033[33m"       # 黄色（101-250ms）
+            elif (( delay_ms_int <= 500 )); then
+                color="\033[33;1m"     # 橘黄色（251-500ms）
             else
-                echo -e "\033[31m$domain : $delay_ms_str ms\033[0m"
+                color="\033[31m"       # 红色（>500ms）
             fi
+
+            printf "${color}%-30s : %3s ms\033[0m\n" "$domain" "$delay_ms_str"
         else
-            echo -e "\033[31m$domain : 9999.00 ms\033[0m"
+            printf "\033[31m%-30s : 9999 ms\033[0m\n" "$domain"
         fi
     done
 
-    echo -e "\n📊 剩余可用：${#AVAILABLE[@]} | 已用：${#USED[@]}"
-    echo -e "💡 绿色=延迟优 黄色=延迟中 红色=延迟差/连接失败"
+    echo -e "\n----------------------------------------"
+    echo -e "📊 剩余可用：${#AVAILABLE[@]} | 已用：${#USED[@]}"
+    echo -e "💡 深绿<20ms | 亮绿21-50ms | 浅绿51-100ms | 黄101-250ms | 橘黄251-500ms | 红>500ms/失败"
 
     read -p $'\n🔁 回车重抽 | 输入 q 退出：' key
     [[ $key == "q" ]] && echo -e "\n👋 已退出" && exit 0
