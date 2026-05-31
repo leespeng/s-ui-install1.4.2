@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 域名池（100个）
 DOMAINS=(
 "www.baidu.com" "www.qq.com" "www.taobao.com" "www.jd.com" "www.sina.com"
 "www.weibo.com" "www.163.com" "www.sohu.com" "www.360.cn" "www.alipay.com"
@@ -16,13 +17,14 @@ DOMAINS=(
 "stackoverflow.com" "www.gitlab.com" "www.npmjs.com" "www.docker.com" "www.kubernetes.io"
 "www.nginx.com" "www.apache.org" "www.amazon.com" "www.ebay.com" "www.netflix.com"
 "www.nvidia.com" "www.openai.com" "www.cisco.com" "www.oracle.com" "www.ibm.com"
-"samsung.com" "sony.com" "intel.com" "amd.com" "asus.com"
-"msi.com" "gigabyte.com" "dell.com" "hp.com" "lg.com"
-"panasonic.com" "toshiba.com" "philips.com" "hisense.com" "tcl.com"
+"www.samsung.com" "www.sony.com" "www.intel.com" "www.amd.com" "www.asus.com"
+"www.msi.com" "www.gigabyte.com" "www.dell.com" "www.hp.com" "www.lg.com"
+"www.panasonic.com" "www.toshiba.com" "www.philips.com" "www.hisense.com" "www.tcl.com"
 )
 
 CACHE_FILE="$HOME/.sni_cache"
-[[ -f "$CACHE_FILE" ]] || touch "$CACHE_FILE"
+[[ -f "$CACHE_FILE" ]] && rm -f "$CACHE_FILE"
+touch "$CACHE_FILE"
 
 echo -e "\n🎲 SNI 随机域名延迟测试器（回车=重抽 | 输入 q 回车=退出）\n"
 
@@ -33,8 +35,9 @@ while true; do
         [[ ! " ${USED[@]} " =~ " $d " ]] && AVAILABLE+=("$d")
     done
 
+    # 彻底修复：当可用域名池为空时，强制重置缓存
     if [[ ${#AVAILABLE[@]} -eq 0 ]]; then
-        echo -e "⚠️ 所有域名已抽完，自动重置缓存！\n"
+        echo -e "⚠️ 所有域名已抽完，强制重置缓存！\n"
         > "$CACHE_FILE"
         USED=()
         AVAILABLE=("${DOMAINS[@]}")
@@ -63,15 +66,15 @@ while true; do
             delay_ms_int=$(echo "$delay" | awk '{printf "%.0f", $1 * 1000}')
 
             if (( delay_ms_int < 50 )); then
-                color="\033[32m"       # 绿色
+                color="\033[32m"       # 绿色（<50ms）
             elif (( delay_ms_int <= 150 )); then
-                color="\033[34m"       # 蓝色
+                color="\033[34m"       # 蓝色（51-150ms）
             elif (( delay_ms_int <= 250 )); then
-                color="\033[0m"        # 白色
+                color="\033[0m"        # 白色（151-250ms）
             elif (( delay_ms_int <= 500 )); then
-                color="\033[33m"       # 黄色
+                color="\033[33m"       # 黄色（251-500ms）
             else
-                color="\033[31m"       # 红色
+                color="\033[31m"       # 红色（>500ms/失败）
             fi
 
             printf "${color}%-32s : %4d ms\033[0m\n" "$domain" "$delay_ms_int"
