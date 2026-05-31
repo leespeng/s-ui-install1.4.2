@@ -25,14 +25,7 @@ DOMAINS=(
 CACHE_FILE="$HOME/.sni_cache"
 [[ -f "$CACHE_FILE" ]] || touch "$CACHE_FILE"
 
-cleanup_and_exit() {
-    echo -e "\n👋 按 ESC 退出，缓存保留，下次继续。"
-    exit 0
-}
-
-trap '' SIGINT
-
-echo -e "\n🎲 SNI 随机域名延迟测试器（回车重抽 / ESC 退出）\n"
+echo -e "\n🎲 SNI 随机域名延迟测试器（回车=重抽 | 输入 q=退出）\n"
 
 while true; do
     USED=($(cat "$CACHE_FILE"))
@@ -46,8 +39,8 @@ while true; do
         > "$CACHE_FILE"
         USED=()
         AVAILABLE=("${DOMAINS[@]}")
-        read -n1 -p "🔄 已重置，回车继续或 ESC 退出..." key
-        [[ $key == $'\e' ]] && cleanup_and_exit
+        read -p "🔄 已重置，回车继续或输入 q 退出..." key
+        [[ $key == "q" ]] && echo "👋 退出" && exit 0
         continue
     fi
 
@@ -62,31 +55,29 @@ while true; do
 
     printf "%s\n" "${USED[@]}" > "$CACHE_FILE"
 
-    echo -e "🔍 正在为您检测这10个域名的延迟..."
+    echo -e "🔍 正在检测延迟..."
     echo "----------------------------------------"
 
-    # 先输出所有域名的延迟，不排序，也不用数组/临时文件
-    echo -e "\n✅ 本次10个域名延迟测试结果："
     for domain in "${SELECTED[@]}"; do
         delay=$(curl -o /dev/null -s -w "%{time_connect}\n" "https://$domain:443" 2>/dev/null)
         if [[ $? -eq 0 && -n "$delay" ]]; then
-            delay_ms=$(echo "$delay * 1000" | bc | awk '{printf "%.0f", $0}')
-            if (( delay_ms < 100 )); then
+            delay_ms=$(echo "$delay" | awk '{printf "%.2f", $1 * 1000}')
+            if (( $(echo "$delay_ms < 100" | bc -l) )); then
                 echo -e "\033[32m$domain : $delay_ms ms\033[0m"
-            elif (( delay_ms < 500 )); then
+            elif (( $(echo "$delay_ms < 500" | bc -l) )); then
                 echo -e "\033[33m$domain : $delay_ms ms\033[0m"
             else
                 echo -e "\033[31m$domain : $delay_ms ms\033[0m"
             fi
         else
-            echo -e "\033[31m$domain : 9999 ms\033[0m"
+            echo -e "\033[31m$domain : 9999.00 ms\033[0m"
         fi
     done
 
-    echo -e "\n📊 剩余可用：${#AVAILABLE[@]} 个 | 已用：${#USED[@]}"
-    echo -e "💡 绿色=延迟低（推荐） 黄色=延迟中等 红色=延迟高/失败"
+    echo -e "\n📊 剩余可用：${#AVAILABLE[@]} | 已用：${#USED[@]}"
+    echo -e "💡 绿色=优 黄色=中 红色=差"
 
-    read -n1 -p $'\n🔁 回车重抽下一组 | ESC 退出 → ' key
-    [[ $key == $'\e' ]] && cleanup_and_exit
+    read -p $'\n🔁 回车重抽 | 输入 q 退出 → ' key
+    [[ $key == "q" ]] && echo -e "\n👋 退出" && exit 0
     echo -e "\n----------------------------------------"
 done
