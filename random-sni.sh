@@ -1,4 +1,3 @@
-cat << 'EOF' > tsni.sh
 #!/bin/bash
 
 DOMAINS=(
