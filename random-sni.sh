@@ -47,7 +47,7 @@ AVAILABLE=("${DOMAINS[@]}")
 USED_COUNT=0
 
 echo -e "\n🎲 SNI 延迟测试（200个精选域名轮询｜回车继续｜q退出）"
-echo -e "💡 绿 <50ms | 蓝 51-150ms | 黄 151-250ms | 紫 251-500ms | 红 >500ms/失败\n"
+echo -e "💡 绿 <50ms | 青 51-150ms | 蓝 151-250ms | 黄 251-500ms | 红 >500ms/失败\n"
 
 while true; do
     if [[ ${#AVAILABLE[@]} -eq 0 ]]; then
@@ -73,14 +73,14 @@ while true; do
         
         if [ $? -eq 0 ] && [ -n "$delay" ] && [ "$delay" != "0.000" ]; then
             ms=$(awk -v t="$delay" 'BEGIN{printf "%.0f", t*1000}')
-            if (( ms < 50 )); then color="\033[1;32m"
-            elif (( ms <= 150 )); then color="\033[1;34m"
-            elif (( ms <= 250 )); then color="\033[1;33m"
-            elif (( ms <= 500 )); then color="\033[1;35m"
-            else color="\033[1;31m"; ms="9999"
+            if (( ms < 50 )); then color="\033[1;32m"      # <50ms: 加粗绿
+            elif (( ms <= 150 )); then color="\033[1;36m"    # 51-150ms: 加粗青
+            elif (( ms <= 250 )); then color="\033[1;34m"    # 151-250ms: 加粗蓝
+            elif (( ms <= 500 )); then color="\033[1;33m"    # 251-500ms: 加粗黄
+            else color="\033[1;31m"; ms="9999"               # >500ms: 加粗红
             fi
         else
-            color="\033[1;31m"; ms="9999"
+            color="\033[1;31m"; ms="9999"                     # 失败: 加粗红
         fi
 
         printf "%b%-35s\t: %s ms\033[0m\n" "$color" "$domain" "$ms"
@@ -96,4 +96,3 @@ while true; do
     read -p $'\n⏎ 按回车抽取下10个 | 输入 q 退出回到终端：' key
     [[ "$key" == "q" || "$key" == "Q" ]] && echo -e "\n👋 已退出测试，顺利返回 root 终端。\n" && exit 0
 done
-EOF
